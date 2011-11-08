@@ -9,8 +9,8 @@
 (function ($) {
 	$.fn.plugins = function() {
 		// Go through data attributes of all elements with "plugins" class
-		this.find('.plugins').each(function() {
-			var value,
+		this.each(function() {
+			var name, value, option,
 				elem = $(this),
 				plugins = elem.data();
 			// Allow many plugins for one element
@@ -18,8 +18,16 @@
 				// Check if plugin exists
 				if (plugins.hasOwnProperty(name) && $.fn[name]) {
 					// Get options and remove attribute
-					value = elem.data(name);
+					value = elem.data(name) || {};
 					elem.removeData(name);
+					// Look for more options
+					for (option in plugins) {
+						if (option.indexOf(name) === 0) {
+							var prop = option.replace(name, "");
+							prop = prop.charAt(0).toLowerCase() + prop.slice(1);
+							value[prop] = elem.data(option);
+						}
+					}
 					// Call plugin on element
 					$.fn[name].apply(elem, [value]);
 				}
@@ -46,11 +54,11 @@
 
 	$(function() {
 		// Load plugins
-		$(document).plugins();
+		$(document).find(".plugin").plugins();
 
 		// Load plugins when new content is inserted to the page
 		after('append,prepend,html', function() {
-			$(this).plugins();
+			$(this).find(".plugin").plugins();
 		});
 	});
 
